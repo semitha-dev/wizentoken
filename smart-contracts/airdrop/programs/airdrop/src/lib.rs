@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, TokenAccount, Token, Transfer};
 use anchor_spl::associated_token::AssociatedToken;
 use sha3::{Digest, Keccak256};         // for keccak hashing
-use merkle_proof::verify_merkle_proof;  // your proof‐verification helper
+use merkle_proof::verify_merkle_proof;  
 
 declare_id!("YourProgramID1111111111111111111111111111111111");
 
