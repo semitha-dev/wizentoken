@@ -44,6 +44,9 @@ pub mod airdrop {
         amount: u64,
         proof: Vec<[u8; 32]>,
     ) -> Result<()> {
+
+        let claim_status = &mut ctx.accounts.claim_status;
+        require!(!claim_status.has_claimed, AirdropError::AlreadyClaimed);
         // 1) Build the leaf hash
         let mut data = ctx.accounts.recipient.key().to_bytes().to_vec();
         data.extend_from_slice(&amount.to_le_bytes());
@@ -76,6 +79,9 @@ pub mod airdrop {
             ),
             amount,
         )?;
+
+        claim_status.recipient = *ctx.accounts.recipient.key;
+        claim_status.has_claimed = true;
 
         Ok(())
     }
@@ -162,6 +168,15 @@ pub struct AirdropBatch<'info> {
     )]
     pub recipient_ata: Account<'info, TokenAccount>,
 
+     #[account(
+        init_if_needed,
+        payer = recipient,
+        space = 8 + 32 + 1, // discriminator + recipient (Pubkey) + has_claimed (bool)
+        seeds = [b"claim_status", recipient.key().as_ref(), distributor.key().as_ref()],
+        bump,
+    )]
+    pub claim_status: Account<'info, ClaimStatus>,
+    
     pub system_program:        Program<'info, System>,
     pub token_program:         Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
@@ -176,8 +191,16 @@ pub struct Distributor {
     pub merkle_root: [u8; 32],
 }
 
+#[account]
+pub struct ClaimStatus {
+    pub recipient: Pubkey,
+    pub has_claimed: bool,
+}
+
 #[error_code]
 pub enum AirdropError {
     #[msg("Merkle proof is invalid")]
     InvalidProof,
+    #[msg("Recipient has already claimed their airdrop")]
+    AlreadyClaimed,
 }
