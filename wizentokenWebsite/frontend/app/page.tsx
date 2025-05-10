@@ -117,67 +117,49 @@ As the ecosystem grows, WZN may list on centralized exchanges (CEXs). Trading is
 </header>
 
       {/* HERO */}
-      <main className="flex-grow container mx-auto px-6 text-center">
-        <p className="uppercase text-sm text-gray-300 tracking-wide">
-          The countdown to the first secret tournament has begun
-        </p>
-        <h2 className="mt-2 text-6xl font-extrabold text-cyan-300">
-          WZN WORLD TOURNAMENT
-        </h2>
-        <p className="mt-2 text-lg text-gray-400">
-          Powering the future of gaming – One player at a time
-        </p>
+<main className="flex-grow container mx-auto px-6 text-center">
+  <p className="uppercase text-sm text-gray-300 tracking-wide">
+    The countdown to the first secret tournament has begun
+  </p>
+  <h2 className="mt-2 text-6xl font-extrabold text-cyan-300">
+    WZN WORLD TOURNAMENT
+  </h2>
+  <p className="mt-2 text-lg text-gray-400">
+    Powering the future of gaming – One player at a time
+  </p>
 
-         {/* COUNTDOWN */}
-    <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-lg mx-auto">
-      {[
-        { label: "Days",    value: days },
-        { label: "Hours",   value: hours },
-        { label: "Minutes", value: minutes },
-        { label: "Seconds", value: seconds },
-      ].map(({ label, value }) => (
-        <div
-          key={label}
-          className="bg-gray-800 rounded-lg py-6 px-4 flex flex-col items-center"
-        >
-          <span className="text-5xl font-bold">{value}</span>
-          <span className="mt-2 text-sm text-cyan-300">{label}</span>
-        </div>
-      ))}
-    </div>
+  {/* COUNTDOWN */}
+  <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-lg mx-auto">
+    {[
+      { label: "Days",    value: days },
+      { label: "Hours",   value: hours },
+      { label: "Minutes", value: minutes },
+      { label: "Seconds", value: seconds },
+    ].map(({ label, value }) => (
+      <div
+        key={label}
+        className="bg-gray-800 rounded-lg py-6 px-4 flex flex-col items-center"
+      >
+        <span className="text-5xl font-bold">{value}</span>
+        <span className="mt-2 text-sm text-cyan-300">{label}</span>
+      </div>
+    ))}
+  </div>
 
-        <button className="mt-8 bg-indigo-600 hover:bg-indigo-700 rounded-full px-12 py-4 text-lg font-medium transition">
-          Join early supporters
-        </button>
-      </main>
+  {/* VISIT GAME BUTTON */}
+  <a
+    href="http://www.wznworldtournament.com/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="mt-8 inline-block bg-indigo-600 hover:bg-indigo-700 rounded-full px-12 py-4 text-lg font-medium transition"
+  >
+    Visit the Game
+  </a>
+</main>
 
-      {/* SUPPORTERS */}
-      <section className="container mx-auto px-6 text-center mt-16 pb-16">
-        <h3 className="text-lg md:text-xl font-bold mb-6">
-          Thanks to our early supporters!
-        </h3>
-        <div className="flex flex-wrap justify-center gap-3 mb-6">
-          {[
-            "Player123",
-            "GameLover",
-            "CryptoFan",
-            "Web3Gamer",
-            "TokenMaster",
-          ].map((name) => (
-            <span
-              key={name}
-              className="px-4 py-2 bg-indigo-800 rounded-full text-sm font-medium"
-            >
-              {name}
-            </span>
-          ))}
-        </div>
-        <p className="text-sm text-gray-400 max-w-md mx-auto leading-relaxed">
-          We only raise what's needed to kickstart the servers and liquidity.
-          <br />
-          No whales, no private sales – just our early players.
-        </p>
-      </section>
+
+     
+        
 
       {/* WHAT IS WZN TOKEN */}
       <section className="bg-indigo-900">
