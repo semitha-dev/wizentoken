@@ -151,7 +151,7 @@ As the ecosystem grows, WZN may list on centralized exchanges (CEXs). Trading is
     href="http://www.wznworldtournament.com/"
     target="_blank"
     rel="noopener noreferrer"
-    className="mt-8 inline-block bg-indigo-600 hover:bg-indigo-700 rounded-full px-12 py-4 text-lg font-medium transition"
+    className="mt-8 inline-block bg-indigo-600 hover:bg-indigo-700 rounded-full px-12 py-4 text-lg font-medium transition mb-14"
   >
     Visit the Game
   </a>
