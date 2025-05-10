@@ -219,7 +219,7 @@ As the ecosystem grows, WZN may list on centralized exchanges (CEXs). Trading is
               />
             </div>
             <p className="text-cyan-100 text-base font-medium leading-snug text-center">
-              Supporting our<br />project early
+              playing our<br />Games
             </p>
           </div>
         </div>
