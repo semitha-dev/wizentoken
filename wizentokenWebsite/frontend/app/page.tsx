@@ -426,6 +426,71 @@ As the ecosystem grows, WZN may list on centralized exchanges (CEXs). Trading is
     </p>
   </div>
 </section>
+{/* TOKEN SALES & STAKING MODEL */}
+<section className="bg-gray-800 py-16 px-6">
+  <div className="container mx-auto max-w-4xl">
+    {/* Header */}
+    <div className="text-center mb-12 space-y-4">
+      <h2 className="text-3xl font-extrabold text-white">
+        Token Sales &amp; Staking Model
+      </h2>
+      <p className="text-gray-400 max-w-2xl mx-auto">
+        To ensure sufficient liquidity, the team will sell additional WZN tokens directly to players. This supports our staking-driven ecosystem and funds ongoing development.
+      </p>
+    </div>
+
+    {/* Feature Grid */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+      <div className="flex items-start bg-gray-700 border border-gray-600 rounded-xl p-6 space-x-4">
+        <div className="text-cyan-300 text-4xl">💰</div>
+        <div>
+          <h3 className="text-xl font-semibold text-white">Token Sales</h3>
+          <p className="text-gray-300">
+            Players can purchase WZN tokens to access weekly play limits and premium tournaments.
+          </p>
+        </div>
+      </div>
+      <div className="flex items-start bg-gray-700 border border-gray-600 rounded-xl p-6 space-x-4">
+        <div className="text-cyan-300 text-4xl">🔒</div>
+        <div>
+          <h3 className="text-xl font-semibold text-white">Staking Requirements</h3>
+          <p className="text-gray-300">
+            Lock tokens to unlock more games per week and enter higher-stake modes.
+          </p>
+        </div>
+      </div>
+      <div className="flex items-start bg-gray-700 border border-gray-600 rounded-xl p-6 space-x-4">
+        <div className="text-cyan-300 text-4xl">🎁</div>
+        <div>
+          <h3 className="text-xl font-semibold text-white">Reward Unlocks</h3>
+          <p className="text-gray-300">
+            Earn in-game rewards and exclusive cosmetics by staking WZN.
+          </p>
+        </div>
+      </div>
+      <div className="flex items-start bg-gray-700 border border-gray-600 rounded-xl p-6 space-x-4">
+        <div className="text-cyan-300 text-4xl">📈</div>
+        <div>
+          <h3 className="text-xl font-semibold text-white">Sustainable Growth</h3>
+          <p className="text-gray-300">
+            This model drives engagement, fair competition, and long-term liquidity.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {/* Call to Action */}
+    <div className="text-center">
+      <a
+        href="#"
+        className="inline-block px-8 py-3 bg-cyan-500 hover:bg-cyan-600 rounded-full text-white font-semibold transition"
+      >
+        Learn More About Staking
+      </a>
+    </div>
+  </div>
+</section>
+
 {/* FAQ Section */}
 <section className="bg-gray-900 py-16">
   <div className="container mx-auto px-6">
