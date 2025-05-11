@@ -450,15 +450,16 @@ As the ecosystem grows, WZN may list on centralized exchanges (CEXs). Trading is
           </p>
         </div>
       </div>
-      <div className="flex items-start bg-gray-700 border border-gray-600 rounded-xl p-6 space-x-4">
-        <div className="text-cyan-300 text-4xl">🔒</div>
-        <div>
-          <h3 className="text-xl font-semibold text-white">Staking Requirements</h3>
-          <p className="text-gray-300">
-            Lock tokens to unlock more games per week and enter higher-stake modes.
-          </p>
-        </div>
-      </div>
+      <div className="flex items-start bg-gray-700 border-l-4 border-cyan-500 rounded-xl p-6 space-x-4">
+  <div className="text-cyan-300 text-4xl">📊</div>
+  <div>
+    <h3 className="text-xl font-semibold text-white">Staking Access</h3>
+    <p className="text-gray-300">
+      Stake your tokens to increase your weekly play allowance and unlock premium game tiers.
+    </p>
+  </div>
+</div>
+
       <div className="flex items-start bg-gray-700 border border-gray-600 rounded-xl p-6 space-x-4">
         <div className="text-cyan-300 text-4xl">🎁</div>
         <div>
