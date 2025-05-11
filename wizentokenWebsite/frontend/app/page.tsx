@@ -479,15 +479,7 @@ As the ecosystem grows, WZN may list on centralized exchanges (CEXs). Trading is
       </div>
     </div>
 
-    {/* Call to Action */}
-    <div className="text-center">
-      <a
-        href="#"
-        className="inline-block px-8 py-3 bg-cyan-500 hover:bg-cyan-600 rounded-full text-white font-semibold transition"
-      >
-        Learn More About Staking
-      </a>
-    </div>
+    
   </div>
 </section>
 
