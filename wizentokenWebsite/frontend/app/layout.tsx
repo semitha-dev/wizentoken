@@ -25,19 +25,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Link the favicon */}
+        <link rel="icon" href="/favicon.png" type="image/png" />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {/* Header with Logo */}
-        <header className="flex items-center p-4 shadow-md bg-white">
-          <img
-            src="/logo.png"
-            alt="WizenToken Logo"
-            className="h-10 w-auto mr-4"
-          />
-          <h1 className="text-xl font-bold">WizenToken</h1>
-        </header>
-
-        {/* Main content */}
-        <main>{children}</main>
+        {children}
       </body>
     </html>
   );
