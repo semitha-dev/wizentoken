@@ -4,8 +4,8 @@ import React, { useEffect, useState, useRef } from "react";
 import gsap from "gsap";
 
 export default function TokenStatsSection() {
-  // Placeholder data
-  const placeholderPrice = 0.0001; // ~0.0001 SOL for 1 WZN
+  // 1 WZN ≈ 1 / 10005.19693 USDC
+  const placeholderPrice = 1 / 10005.196931255;
   const placeholderHolders = 6;
 
   const [price, setPrice] = useState<number | null>(placeholderPrice);
@@ -13,26 +13,7 @@ export default function TokenStatsSection() {
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Disabled the fetch logic for now since API isn't returning real data
-    // If in future you want to re-enable, just uncomment!
-
-    // async function fetchPrice() {
-    //   try {
-    //     const res = await fetch("/api/token-price");
-    //     const data = await res.json();
-    //     if (data.price) {
-    //       setPrice(data.price);
-    //     } else {
-    //       setPrice(null);
-    //       console.error(data.error);
-    //     }
-    //   } catch (e) {
-    //     setPrice(null);
-    //     console.error("Error fetching price", e);
-    //   }
-    // }
-
-    // fetchPrice();
+    // fetch logic disabled for now
   }, []);
 
   useEffect(() => {
@@ -51,18 +32,22 @@ export default function TokenStatsSection() {
         ref={cardRef}
         className="bg-gray-800 rounded-xl p-8 shadow-lg text-center"
       >
-        <h2 className="text-2xl font-bold text-cyan-300 mb-4">WZN Token Stats</h2>
+        <h2 className="text-2xl font-bold text-cyan-300 mb-4">
+          WZN Token Stats
+        </h2>
 
         <div className="mb-6">
-          <p className="text-gray-400">1 WZN in SOL </p>
+          <p className="text-gray-400">1 WZN in USDC</p>
           <p className="text-3xl font-semibold">
-            {price !== null ? `${price.toFixed(6)} SOL` : "Not Available"}
+            {price !== null ? `${price.toFixed(6)} USDC` : "Not Available"}
           </p>
         </div>
 
         <div>
           <p className="text-gray-400">Number of Holders</p>
-          <p className="text-3xl font-semibold">{holders !== null ? holders : "Not Available"}</p>
+          <p className="text-3xl font-semibold">
+            {holders !== null ? holders : "Not Available"}
+          </p>
         </div>
       </div>
     </section>

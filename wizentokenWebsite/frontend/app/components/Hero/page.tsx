@@ -49,7 +49,7 @@ function useFixedCountdown(targetDate: string) {
 
 export default function Hero() {
   const { days, hours, minutes, seconds } = useFixedCountdown(
-    "2025-06-05T12:00:00Z"
+    "2025-06-22T12:00:00Z"
   );
   const containerRef = useRef<HTMLDivElement>(null);
 
