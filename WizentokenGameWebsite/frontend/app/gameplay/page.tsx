@@ -1,159 +1,187 @@
-// app/gameplay/page.tsx
 "use client"
-
-import { useState, useEffect } from "react"
-import { useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { supabase } from "@/lib/supabaseClient"
 import Navbar from "@/app/components/Navbar"
-import BidPanel from "@/app/components/BidPanel"
-import PlayerAvatar from "@/app/components/PlayerAvatar"
-import TrickPile from "@/app/components/TrickPile"
-import Hand from "@/app/components/Hand"
-import { useGame, Bid, CardType } from "@/app/hooks/useGame"
-import type { Card as LogicCard } from "@/app/lib/gamelogic"
 
 export default function GameplayPage() {
-  const search = useSearchParams()
-  const playersCount = parseInt(search.get("players") || "2", 10)
+  const params = useSearchParams()
+  const gameId = params.get("gameId")
+  const router = useRouter()
 
-  // Local bid state
-  const [localBid, setLocalBid] = useState<Bid>({ player: 0, mode: 'abondance', trump: '♠' })
-  const trumpOptions: LogicCard['suit'][] = ['♠', '♥', '♦', '♣']
+  const [user, setUser] = useState<any>(null)
+  const [myPlayer, setMyPlayer] = useState<any>(null)    // this is players.id entry
+  const [hand, setHand] = useState<any[]>([])
+  const [players, setPlayers] = useState<any[]>([])
+  const [moves, setMoves] = useState<any[]>([])
+  const [game, setGame] = useState<any>(null)            // includes current_turn = players.id
+  const [loading, setLoading] = useState(true)
 
-  // Manual score submission state
-  const [lastSubmission, setLastSubmission] = useState<number | null>(null)
-  const [alertMsg, setAlertMsg] = useState<string | null>(null)
+  const API_BASE = "http://localhost:4000"
 
-  // Load last submission timestamp
   useEffect(() => {
-    const ts = localStorage.getItem("last_score_submit")
-    if (ts) setLastSubmission(parseInt(ts, 10))
-  }, [])
+    async function init() {
+      // 1) get session
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      if (!session?.user) {
+        router.push("/login")
+        return
+      }
+      setUser(session.user)
 
-  const canSubmit = !lastSubmission || Date.now() - lastSubmission > 5 * 60 * 1000
+      // 2) load this game's players
+      const { data: p } = await supabase
+        .from("players")
+        .select("id, user_id, users(username)")
+        .eq("game_id", gameId)
+      setPlayers(p || [])
 
-  const submitScoreManually = (won: boolean) => {
-    if (!canSubmit && lastSubmission) {
-      const remaining = Math.ceil((5 * 60 * 1000 - (Date.now() - lastSubmission)) / 1000)
-      setAlertMsg(`Please wait ${remaining} seconds before submitting again.`)
+      // find your player row
+      const me = p?.find((pl) => pl.user_id === session.user.id)
+      if (!me) {
+        alert("You are not part of this game.")
+        router.push("/")
+        return
+      }
+      setMyPlayer(me)
+
+      // 3) **fetch your hand** & game using your **players.id** (not session.user.id)
+      const res = await fetch(
+        `${API_BASE}/game-state/${gameId}/${me.id}`
+      )
+      const data = await res.json()
+      setHand(data.hand?.cards || [])
+      setMoves(data.moves || [])
+      setGame(data.game || {})
+      setLoading(false)
+    }
+
+    init()
+  }, [gameId, router])
+
+  // subscribe to moves & current_turn updates
+  useEffect(() => {
+    if (!gameId) return
+    const chan = supabase
+      .channel(`game-${gameId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "moves", filter: `game_id=eq.${gameId}` },
+        (payload) => setMoves((old: any[]) => [...old, payload.new])
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "games", filter: `id=eq.${gameId}` },
+        (payload) => setGame((old: any) => ({ ...old, ...payload.new }))
+      )
+      .subscribe()
+    return () => { supabase.removeChannel(chan) }
+  }, [gameId])
+
+  const playCard = async (card: any) => {
+    // only when it's your players.id turn
+    if (game.current_turn !== myPlayer.id) {
+      alert("Not your turn!")
       return
     }
-    // Log to local leaderboard
-    const lbRaw = localStorage.getItem("wzn_leaderboard") || "[]"
-    const lb: Array<{ date: number; result: 'win' | 'loss' }> = JSON.parse(lbRaw)
-    lb.push({ date: Date.now(), result: won ? 'win' : 'loss' })
-    localStorage.setItem("wzn_leaderboard", JSON.stringify(lb))
-    localStorage.setItem("last_score_submit", Date.now().toString())
-    setLastSubmission(Date.now())
-    setAlertMsg(won ? "Recorded as a win!" : "Recorded as a loss!")
+    const roundNumber = Math.floor(moves.length / 4) + 1
+    const res = await fetch(`${API_BASE}/play-card`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        gameId,
+        playerId: myPlayer.id,
+        card,
+        roundNumber,
+      }),
+    })
+    if (res.ok) {
+      setHand((h) => h.filter((c) => !(c.suit === card.suit && c.rank === card.rank)))
+    } else {
+      const err = await res.json()
+      alert(err.error)
+    }
   }
 
-  // Game hook encapsulates all logic/state
-  const {
-    biddingComplete,
-    bids,
-    dealPreview,
-    submitBid,
-    hands,
-    trickCards,
-    turn,
-    winnersHistory,
-    playCard,
-    names,
-    declarerIdx,
-    declarerBid,
-    showSummary,
-    summary,
-    finishSummary
-  } = useGame(playersCount, localBid)
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        Loading…
+      </div>
+    )
+  }
 
-  // Initial hand preview
-  useEffect(() => {
-    dealPreview()
-  }, [dealPreview])
+  // rotate so that index 0 is always you
+  const idx = players.findIndex((p) => p.id === myPlayer.id)
+  const rotated = idx >= 0 ? [...players.slice(idx), ...players.slice(0, idx)] : players
+  const isMyTurn = game.current_turn === myPlayer.id
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gray-900 text-white flex flex-col">
       <Navbar />
+      <main className="relative flex-1 flex flex-col items-center justify-center">
 
-      {/* Bidding phase */}
-      {!biddingComplete ? (
-        <BidPanel
-          localBid={localBid}
-          trumpOptions={trumpOptions}
-          onBidChange={(newBid: Bid) => setLocalBid(newBid)}
-          onSubmit={submitBid}
-          handPreview={hands[0] || []}
-        />
-      ) : (
-        /* Main game phase */
-        <div className="relative w-full h-[calc(100vh-64px)] overflow-hidden">
-          {/* Bids display */}
-          <div className="absolute top-4 right-4 bg-gray-800 p-2 rounded">
-            {bids.map((b, i) => (
-              <div key={i} className="text-sm">
-                {names[b.player]}: {b.mode}{b.trump ? `(${b.trump})` : ''}
-              </div>
-            ))}
-          </div>
-
-          {/* Declarer info */}
-          <div className="absolute top-4 left-4 bg-gray-800 p-2 rounded">
-            <div>Declarer: {names[declarerIdx]}</div>
-            <div>Contract: {declarerBid?.mode}{declarerBid?.trump ? `(${declarerBid.trump})` : ''}</div>
-          </div>
-
-          {/* Opponent avatars and scores */}
-          {playersCount > 2 && (
-            <PlayerAvatar position="top" name={names[2]} history={winnersHistory.map(w => w === 2)} />
-          )}
-          {playersCount > 1 && (
-            <PlayerAvatar position="left" name={names[1]} history={winnersHistory.map(w => w === 1)} />
-          )}
-          {playersCount === 4 && (
-            <PlayerAvatar position="right" name={names[3]} history={winnersHistory.map(w => w === 3)} />
-          )}
-
-          {/* Center trick pile */}
-          <TrickPile cards={trickCards} />
-
-          {/* Local hand with trick-history circles */}
-          <div className="absolute bottom-20 w-full px-4">
-            <PlayerAvatar position="bottom" name={names[0]} history={winnersHistory.map(w => w === 0)} />
-          </div>
-          <Hand cards={hands[0] || []} onPlay={(card: CardType) => playCard(0, card)} isTurn={turn === 0} />
+        {/* Turn indicator */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2">
+          {isMyTurn
+            ? <span className="text-green-400 font-bold">✅ Your turn</span>
+            : <span className="text-yellow-400 font-bold">⏳ Waiting</span>}
         </div>
-      )}
 
-      {/* End-of-game summary modal with manual score submission */}
-      {showSummary && summary && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center">
-          <div className="bg-gray-800 p-6 rounded-2xl text-center space-y-4">
-            <h2 className="text-2xl font-bold">Game Over</h2>
-            <p>Tricks Won: <strong>{hands[0]?.length}</strong></p>
-            {alertMsg && <p className="text-yellow-400">{alertMsg}</p>}
-            <div className="flex justify-center gap-4">
-              <button
-                disabled={!canSubmit}
-                onClick={() => submitScoreManually(true)}
-                className={`px-4 py-2 rounded-full ${canSubmit ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-600 cursor-not-allowed'}`}>
-                I won
-              </button>
-              <button
-                disabled={!canSubmit}
-                onClick={() => submitScoreManually(false)}
-                className={`px-4 py-2 rounded-full ${canSubmit ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-600 cursor-not-allowed'}`}>
-                I lost
-              </button>
+        {/* Current trick */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="text-center">
+            <h2 className="mb-2 text-xl font-bold">Current Trick</h2>
+            <div className="flex space-x-2">
+              {moves.slice(-4).map((m, i) => (
+                <div key={i} className="bg-gray-700 px-3 py-1 rounded">
+                  {m.card.rank} {m.card.suit}
+                </div>
+              ))}
             </div>
-            <button
-              onClick={finishSummary}
-              className="mt-2 bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-full"
-            >
-              Close
-            </button>
           </div>
         </div>
-      )}
+
+        {/* Opponents */}
+        <div className="absolute top-8 left-1/2 -translate-x-1/2">
+          <PlayerCard player={rotated[1]} />
+        </div>
+        <div className="absolute left-8 top-1/2 -translate-y-1/2">
+          <PlayerCard player={rotated[2]} />
+        </div>
+        <div className="absolute right-8 top-1/2 -translate-y-1/2">
+          <PlayerCard player={rotated[3]} />
+        </div>
+
+        {/* Your hand */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-2">
+          {hand.map((card, i) => (
+            <button
+              key={i}
+              onClick={() => playCard(card)}
+              disabled={!isMyTurn}
+              className={`px-3 py-1 rounded ${
+                isMyTurn
+                  ? "bg-purple-600 hover:bg-purple-700"
+                  : "bg-gray-600 cursor-not-allowed opacity-60"
+              }`}
+            >
+              {card.rank} {card.suit}
+            </button>
+          ))}
+        </div>
+      </main>
+    </div>
+  )
+}
+
+function PlayerCard({ player }: any) {
+  if (!player) return null
+  return (
+    <div className="bg-gray-800 px-4 py-2 rounded">
+      <strong>{player.users.username}</strong>
     </div>
   )
 }

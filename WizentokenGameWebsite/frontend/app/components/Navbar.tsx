@@ -1,17 +1,48 @@
 "use client"
 
 import Link from "next/link"
-import { useWallet } from "@solana/wallet-adapter-react"
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui"
 import { Gamepad2 } from "lucide-react"
 import { useEffect, useState } from "react"
-import "@solana/wallet-adapter-react-ui/styles.css"
+import { supabase } from "@/lib/supabaseClient"
 
 export default function Navbar() {
-  const { publicKey, disconnect } = useWallet()
   const [mounted, setMounted] = useState(false)
+  const [username, setUsername] = useState<string | null>(null)
 
-  useEffect(() => setMounted(true), [])
+  useEffect(() => {
+    setMounted(true)
+
+    const getUser = async () => {
+      // Check if user is logged in
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (session?.user) {
+        // Fetch username from users table
+        const { data, error } = await supabase
+          .from("users")
+          .select("username")
+          .eq("id", session.user.id)
+          .single()
+
+        if (!error && data) {
+          setUsername(data.username)
+        }
+      }
+    }
+
+    getUser()
+
+    // Optional: listen for auth state changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(() => {
+      getUser()
+    })
+
+    return () => {
+      authListener.subscription.unsubscribe()
+    }
+  }, [])
 
   return (
     <nav className="bg-gray-800 border-b border-gray-700">
@@ -23,7 +54,7 @@ export default function Navbar() {
               <Gamepad2 className="w-6 h-6 text-white" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              Wizen 
+              Wizen
             </span>
           </Link>
 
@@ -44,28 +75,37 @@ export default function Navbar() {
             <Link href="/vote" className="text-gray-300 hover:text-purple-400 transition">
               Vote
             </Link>
-             <Link href="/settings" className="text-gray-300 hover:text-purple-400 transition">
+            <Link href="/settings" className="text-gray-300 hover:text-purple-400 transition">
               My Stats
             </Link>
             <Link href="/tournament" className="text-gray-300 hover:text-purple-400 transition">
-              tournament
+              Tournament
             </Link>
           </div>
 
-          {/* Wallet Connect/Disconnect */}
+          {/* Auth Buttons or Username */}
           <div className="flex items-center space-x-4">
-            {mounted && publicKey ? (
-              <button
-                onClick={disconnect}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full transition"
-              >
-                Disconnect
-              </button>
-            ) : (
-              mounted && (
-                <WalletMultiButton className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full hover:from-purple-600 hover:to-pink-600" />
-              )
-            )}
+            {mounted &&
+              (username ? (
+                <span className="px-4 py-2 bg-purple-600 text-white rounded-full">
+                  {username}
+                </span>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/sign-up"
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-full transition"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              ))}
           </div>
         </div>
       </div>
